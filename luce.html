@@ -1,0 +1,201 @@
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1,maximum-scale=1, user-scalable=no">
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="mobile/jquery.mobile-1.4.5.min.css"  type="text/css"/>
+    <link rel="stylesheet" href="style.css"  type="text/css" />
+    <script src="jquery-2.2.4.min.js"></script>
+    <script src="mobile/jquery.mobile-1.4.5.min.js"></script>
+    <script src="beehive_picker.js"></script>
+    <script src="paho-mqtt.js"></script>
+    <script src="scripts.js"  ></script>
+    <link rel="stylesheet" href="jqwidgets/styles/jqx.base.css" type="text/css" />
+    <link rel="stylesheet" href="jqwidgets/styles/jqx.material.css" type="text/css" />
+    <script type="text/javascript" src="jqwidgets/jqxcore.js"></script>
+    <script type="text/javascript" src="jqwidgets/jqxdraw.js"></script>
+    <script type="text/javascript" src="jqwidgets/jqxgauge.js"></script>
+    <script type="text/javascript" src="jqwidgets/jqxtabs.js"></script>
+  </head>
+  <body class="ui-mobile-viewport ui-overlay-a">
+    <div class="container" data-role="page ui-page">
+    <div id="maintabs">
+
+        <ul>
+          <li><a href="#luci" >Luci</a></li>
+          <li><a href="#ambiente" >Luci ambiente</a></li>
+          <li ><a href="#sensori-ambi" >Sensori ambiente</a></li>          
+          <li ><a href="#sensori-acqua" >Sensori acqua</a></li>          
+        </ul>
+
+
+      <div id="luci" class="ui-body-d ui-content">
+
+    <table>
+      <tr>
+        <td>
+          <div class="container">
+            <div class="wrapper"><div class="title">Luce</div></div>
+            <div class="wrapper">
+              <input type="checkbox" id="onoff-main" data-role="flipswitch" />
+            </div>
+            <div data-role="tabs" id="tabs">
+              <div data-role="navbar">
+                <ul>
+                  <li><a href="#colore" data-ajax="false" class="ui-btn-active">Colore</a></li>
+                  <li ><a href="#effetti" data-ajax="false">Effetti</a></li>
+                  <li><a href="#temperatura" data-ajax="false">Temperatura</a></li>                
+                </ul>
+              </div>
+
+            <div id="effetti" class="ui-body-d ui-content">
+
+                  <div class="wrapper"><div class="title">Effetti</div></div>
+                  <div class="wrapper">
+                    <button id="random-main" data-role="button">Random</button>
+                    <button id="rainbow-main" data-role="button">Rainbow</button>
+                  </div>
+                  <div class="wrapper">
+                    <button id="abinsula-main" data-role="button">Abinsula</button>
+                  </div>
+            </div>
+            <div id="temperatura" class="ui-body-d ui-content">
+            <div class="wrapper"><div class="title">Temperatura</div></div>
+
+              <select name="select-native-1" id="temp-main"></select>
+
+            </div>
+            <div id="Colore" class="ui-body-d ui-content">
+            <div class="wrapper"><div class="title">Colore</div></div>
+            <div id="main"></div>
+            <div class="wrapper">
+              <div id="view-color-main"></div>
+            </div>
+            </div>
+            <div class="wrapper"><div class="title">Luminosit&agrave;</div></div>
+            <br>
+            </div>
+            <input type="range" name="slider-main" id="slider-main" style="margin-left: 5px" value="0" min="0" max="100" />
+
+          </div>
+        </td>
+        </tr>
+        </table>
+        </div>
+        <div id="luci" class="ui-body-d ui-content">
+          <table>
+            <tr>
+        <td>
+          <div class="container">
+            <div class="wrapper"><div class="title">Ambiente</div></div>
+            <div class="wrapper">
+              <input type="checkbox" id="onoff-ambi" data-role="flipswitch" />
+            </div>
+            <div data-role="tabs" id="tabs2">
+              <div data-role="navbar">
+                <ul>
+                <li><a href="#colore-ambi" data-ajax="false" class="ui-btn-active">Colore</a></li>
+                <li><a href="#effetti-ambi" data-ajax="false" >Effetti</a></li>
+                <li><a href="#temperatura-ambi" data-ajax="false">Temperatura</a></li>
+                
+                </ul>
+              </div>
+
+            <div id="effetti-ambi" class="ui-body-d ui-content">
+
+                  <div class="wrapper"><div class="title">Effetti</div></div>
+                  <div class="wrapper">
+                    <button id="random-ambi" data-role="button">Random</button>
+                    <button id="rainbow-ambi" data-role="button">Rainbow</button>
+                  </div>
+                  <div class="wrapper">
+                    <button id="abinsula-ambi" data-role="button">Abinsula</button>
+                  </div>
+            </div>
+            <div id="temperatura-ambi" class="ui-body-d ui-content">
+            <div class="wrapper"><div class="title">Temperatura</div></div>
+
+              <select name="select-native-1" id="temp-ambi"></select>
+
+            </div>
+            <div id="colore-ambi" class="ui-body-d ui-content">
+            <div class="wrapper"><div class="title">Colore</div></div>
+            <div id="ambient"></div>
+            <div class="wrapper">
+              <div id="view-color-ambi"></div>
+            </div>
+            </div>
+            <div class="wrapper"><div class="title">Luminosit&agrave;</div></div>
+            <br>
+            </div>
+            <input type="range" name="slider-ambi" id="slider-ambi" style="margin-left: 5px" value="0"  min="0" max="100"/>
+
+          </div>
+          </td>
+
+      </tr>
+      </table>
+    </div>
+      <div id="sensori-ambi" class="ui-body-d ui-content">
+          <table>
+            <tr>
+              <td>
+                <div class="wrapper"><div class="title">Luminosit&agrave;</div></div>
+              </td>
+              <td>
+                <div class="wrapper"><div class="title">Temperatura</div></div>
+              </td>
+              <td>
+                <div class="wrapper"><div class="title">Umidit&agrave;</div></div>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div id="lumGauge"></div>
+              </td>
+              <td>
+                <div id="tempGauge"></div>
+              </td>
+              <td>
+                <div id="humidityGauge"></div>
+              </td>
+
+            </tr>
+            <tr>
+              <td>
+                <div class="wrapper label" id="lumGauge-label">0 lum</div>
+              </td>
+              <td>
+                <div class="wrapper label" id="tempGauge-label">0 &deg;C</div>
+              </td>
+              <td>
+                <div class="wrapper label" id="humidityGauge-label">0 %</div>
+              </td>
+
+            </tr>
+          </table>
+        </div>
+        <div id="sensori-acqua" class="ui-body-d ui-content">
+          <table>
+            <tr>
+              <td>
+                <div class="wrapper"><div class="title">Acqua</div></div>
+              </td>
+            </tr>
+            <tr>
+
+              <td>
+                <div id="waterGauge"></div>
+              </td>
+            </tr>
+            <tr>
+
+              <td>
+                <div class="wrapper label" id="waterGauge-label">0 &deg;C</div>
+              </td>
+            </tr>
+          </table>
+        </div>
+          </div>
+
+  </body>
+</html>

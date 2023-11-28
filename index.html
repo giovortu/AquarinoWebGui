@@ -1,0 +1,281 @@
+<html>
+
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1,maximum-scale=1, user-scalable=no">
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="mobile/jquery.mobile-1.4.5.min.css" type="text/css" />
+  <link rel="stylesheet" href="style.css" type="text/css" />
+  <script src="jquery-2.2.4.min.js"></script>
+  <script src="mobile/jquery.mobile-1.4.5.min.js"></script>
+  <script src="beehive_picker.js"></script>
+  <script src="paho-mqtt.js"></script>
+  <script src="scripts.js"></script>
+  <script src="crypto.js"></script>
+  <script src="overlay.js"></script>
+  <link rel="stylesheet" href="jqwidgets/styles/jqx.base.css" type="text/css" />
+  <link rel="stylesheet" href="jqwidgets/styles/jqx.material.css" type="text/css" />
+  <script type="text/javascript" src="jqwidgets/jqxcore.js"></script>
+  <script type="text/javascript" src="jqwidgets/jqxdraw.js"></script>
+  <script type="text/javascript" src="jqwidgets/jqxgauge.js"></script>
+  <script type="text/javascript" src="jqwidgets/jqxtabs.js"></script>
+</head>
+
+<body class="ui-mobile-viewport ui-overlay-a">
+
+  <div id="overlay">
+    <div id="password-prompt">
+      <h2>Enter Password</h2>
+      <div id="password-input-container">
+          <input type="password" id="password" readonly>
+          <div id="keypad">
+              <div class="key-row">
+                  <button class="key" data-value="1">1</button>
+                  <button class="key" data-value="2">2</button>
+                  <button class="key" data-value="3">3</button>
+              </div>
+              <div class="key-row">
+                  <button class="key" data-value="4">4</button>
+                  <button class="key" data-value="5">5</button>
+                  <button class="key" data-value="6">6</button>
+              </div>
+              <div class="key-row">
+                  <button class="key" data-value="7">7</button>
+                  <button class="key" data-value="8">8</button>
+                  <button class="key" data-value="9">9</button>
+              </div>
+              <div class="key-row">
+                  <button class="key" data-value="delete"><i data-value="delete" class="key material-icons">backspace</i></button>
+                  <button class="key" data-value="0">0</button>
+                  <button class="key" data-value="clear"><i data-value="clear" class="key material-icons">clear</i></button>
+              </div>
+              <div class="key-row">
+                  <button class="key" data-value="submit"><i data-value="submit" class="key material-icons">check</i></button>
+              </div>
+          </div>
+      </div>
+  </div>
+</div>
+
+  <div class="container" data-role="page ui-page">
+
+
+    <div id="maintabs">
+
+      <ul>
+        <li><a href="#acquario">Acquario</a></li>
+        <li><a href="#ambiente">Ambiente</a></li>
+        <li><a href="#sensori-ambi">Sensori</a></li>
+        <li><a href="#sensori-acqua">Acqua</a></li>
+        <li><a href="#camera">Camera</a></li>
+      </ul>
+
+      <div id="acquario" class="ui-body-d ui-content">
+
+        <table class="container-table">
+          <tr>
+            <td style="width:100%">
+              <div class="container">
+                <div class="wrapper">
+                  <div id="flipswitchWrapper">
+                    <input type="checkbox" id="onoff-main" data-role="flipswitch" />
+                  </div>
+                </div>
+              </div>
+              <div data-role="tabs" id="tabs">
+                <div data-role="navbar">
+                  <ul>
+                    <li><a href="#colore" data-ajax="false" class="ui-btn-active">Colore</a></li>
+                    <li><a href="#effetti" data-ajax="false">Effetti</a></li>
+                    <li><a href="#temperatura" data-ajax="false">Temperatura</a></li>
+                  </ul>
+                </div>
+
+                <div id="colore" class="ui-body-d ui-content ">
+                  <div class="giovortu">
+                  <div id="main" ></div>
+                  <div id="view-color-main"></div>
+                </div>
+               </div>
+
+                <div id="effetti" class="ui-body-d ui-content">
+                  <div class="wrapper">
+                    <button id="random-main" data-role="button">Random</button>
+                  </div>
+                  <div class="wrapper">
+                    <button id="rainbow-main" data-role="button">Rainbow</button>
+                  </div>
+                  <div class="wrapper">
+                    <button id="abinsula-main" data-role="button">Abinsula</button>
+                  </div>
+                </div>
+
+                <div id="temperatura" class="ui-body-d ui-content">
+                  <select name="select-native-1" id="temp-main"></select>
+                </div>
+
+              </div>
+              <input type="range" name="slider-main" id="slider-main" style="margin-left: 5px" value="0" min="0" max="100" />
+
+      </div>
+      </td>
+      </tr>
+      </table>
+    </div>
+    <div id="ambiente" class="ui-body-d ui-content">
+      <table class="container-table">
+        <tr>
+          <td>
+            <div class="container">
+              <div class="wrapper">
+                <div id="flipswitchWrapper">
+                  <input type="checkbox" id="onoff-ambi" data-role="flipswitch" />
+                </div>
+              </div>
+              </div>
+              <div data-role="tabs" id="tabs2">
+                <div data-role="navbar">
+                  <ul>
+                    <li><a href="#colore-ambi" data-ajax="false" class="ui-btn-active">Colore</a></li>
+                    <li><a href="#effetti-ambi" data-ajax="false">Effetti</a></li>
+                    <li><a href="#temperatura-ambi" data-ajax="false">Temperatura</a></li>
+
+                  </ul>
+                </div>
+
+                <div id="colore-ambi" class="ui-body-d ui-content">
+                  <div class="giovortu">
+                  <div id="ambient"></div>
+                  <div id="view-color-ambi"></div>
+                  </div>
+                </div>
+
+                <div id="effetti-ambi" class="ui-body-d ui-content">
+                  <div class="wrapper">
+                    <button id="random-ambi" data-role="button">Random</button>
+                  </div>
+                  <div class="wrapper">
+                    <button id="rainbow-ambi" data-role="button">Rainbow</button>
+                  </div>
+                  <div class="wrapper">
+                    <button id="abinsula-ambi" data-role="button">Abinsula</button>
+                  </div>
+                </div>
+ 
+                <div id="temperatura-ambi" class="ui-body-d ui-content">
+                  <select name="select-native-1" id="temp-ambi"></select>
+
+
+
+                </div>
+
+                <!--div class="slider-container">
+                  <input type="range" id="temperature-slider-ambi" min="1000" max="10000" step="500" value="4000">
+                  <div id="tooltip" class="tooltip">Color: Warm White (4000K)</div>
+                </div-->
+
+              </div>
+              <input type="range" name="slider-ambi" id="slider-ambi" style="margin-left: 5px" value="0" min="0" max="100" />
+
+            </div>
+          </td>
+
+        </tr>
+      </table>
+    </div>
+
+    <div id="sensori-ambi" class="ui-body-d ui-content">
+      <table class="container-table">
+        <tr>
+          <td>
+            <div class="wrapper">
+              <div class="title">Luminosit&agrave;</div>
+            </div>
+          </td>
+          <td>
+            <div class="wrapper">
+              <div class="title">Temperatura</div>
+            </div>
+          </td>
+          <td>
+            <div class="wrapper">
+              <div class="title">Umidit&agrave;</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <div class="wrapper">
+            <div id="lumGauge"></div>
+            </div>
+          </td>
+          <td>
+            <div class="wrapper">
+            <div id="tempGauge"></div>
+            </div>
+          </td>
+          <td>
+            <div class="wrapper">
+            <div id="humidityGauge"></div>
+            </div>
+          </td>
+
+        </tr>
+        <tr>
+          <td>
+            <div class="wrapper label" id="lumGauge-label">0 lum</div>
+          </td>
+          <td>
+            <div class="wrapper label" id="tempGauge-label">0 &deg;C</div>
+          </td>
+          <td>
+            <div class="wrapper label" id="humidityGauge-label">0 %</div>
+          </td>
+
+        </tr>
+      </table>
+    </div>
+    <div id="sensori-acqua" class="ui-body-d ui-content">
+      <table class="container-table">
+        <tr>
+          <td>
+            <div class="wrapper">
+              <div class="title">Acqua</div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+
+          <td>
+            <div class="wrapper">
+            <div id="waterGauge"></div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+
+          <td>
+            <div class="wrapper label" id="waterGauge-label">0 &deg;C</div>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div id="camera" class="ui-body-d ui-content">
+
+      <h3>WebSocket Image Streaming</h3>
+      <div id="video-container">
+        <canvas id="canvas"></canvas>
+      </div>
+
+    </div>
+
+
+  </div>
+  <div id="refresh"> <input type="submit" id="refresh_page" value="Refresh"> </div>
+</body>
+<script>
+
+    $.mobile.selectmenu.prototype.options.nativeMenu = false;
+
+
+</script>
+</html>

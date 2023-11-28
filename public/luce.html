@@ -1,0 +1,303 @@
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1,maximum-scale=1, user-scalable=no">
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="/mobile/jquery.mobile-1.4.5.min.css"  type="text/css"/>
+    <link rel="stylesheet" href="style.css"  type="text/css" />
+    <script src="/jquery-2.2.4.min.js"></script>
+    <script src="/mobile/jquery.mobile-1.4.5.min.js"></script>
+    <script src="/beehive_picker.js"></script>
+    <script src="/paho-mqtt.js"></script>
+    <script src="/scripts.js"  ></script>
+    <link rel="stylesheet" href="/jqwidgets/styles/jqx.base.css" type="text/css" />
+    <link rel="stylesheet" href="/jqwidgets/styles/jqx.material.css" type="text/css" />
+    <script type="text/javascript" src="/jqwidgets/jqxcore.js"></script>
+    <script type="text/javascript" src="/jqwidgets/jqxdraw.js"></script>
+    <script type="text/javascript" src="/jqwidgets/jqxgauge.js"></script>
+    <script type="text/javascript" src="/jqwidgets/jqxtabs.js"></script>
+  </head>
+  <body class="ui-mobile-viewport ui-overlay-a">
+    <div class="container" data-role="page ui-page">
+
+    <table>
+      <tr>
+        <td>
+          <div class="container">
+            <div class="wrapper"><div class="title">Luce</div></div>
+            <div class="wrapper">
+              <input type="checkbox" id="onoff-main" data-role="flipswitch" />
+            </div>
+            <div data-role="tabs" id="tabs">
+              <div data-role="navbar">
+                <ul>
+                  <li><a href="#colore" data-ajax="false" class="ui-btn-active">Colore</a></li>
+                  <li ><a href="#effetti" data-ajax="false">Effetti</a></li>
+                  <li><a href="#temperatura" data-ajax="false">Temperatura</a></li>                
+                </ul>
+              </div>
+
+            <div id="effetti" class="ui-body-d ui-content">
+
+                  <div class="wrapper"><div class="title">Effetti</div></div>
+                  <div class="wrapper">
+                    <button id="random-main" data-role="button">Random</button>
+                    <button id="rainbow-main" data-role="button">Rainbow</button>
+                  </div>
+                  <div class="wrapper">
+                    <button id="abinsula-main" data-role="button">Abinsula</button>
+                  </div>
+            </div>
+            <div id="temperatura" class="ui-body-d ui-content">
+            <div class="wrapper"><div class="title">Temperatura</div></div>
+
+              <select name="select-native-1" id="temp-main"></select>
+
+            </div>
+            <div id="Colore" class="ui-body-d ui-content">
+            <div class="wrapper"><div class="title">Colore</div></div>
+            <div id="main"></div>
+            <div class="wrapper">
+              <div id="view-color-main"></div>
+            </div>
+            </div>
+            <div class="wrapper"><div class="title">Luminosit&agrave;</div></div>
+            <br>
+            </div>
+            <input type="range" name="slider-main" id="slider-main" style="margin-left: 5px" value="0" min="0" max="100" />
+
+          </div>
+        </td>
+        </tr>
+        </table>
+
+<script language="javascript">
+//
+// Copyright (c) 2015 Giovortu
+// Released under the MIT license
+// Permission is hereby granted, free of charge, to any person obtaining a 
+// copy of this software and associated documentation files (the 
+// "Software"), to deal in the Software without restriction, including 
+// without limitation the rights to use, copy, modify, merge, publish, 
+// distribute, sublicense, and/or sell copies of the Software, and to 
+// permit persons to whom the Software is furnished to do so, subject to 
+// the following conditions:
+// 
+// The above copyright notice and this permission notice shall be 
+// included in all copies or substantial portions of the Software.
+// 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, 
+// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND 
+// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE 
+// LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION 
+// OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
+// WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+//
+
+var _brightness = 4;
+var _on = "on";
+var _color = "ff0000";
+
+var _brightness2 = 4;
+var _on2 = "on";
+var _color2 = "ff0000";
+
+var _temperature = new Map( [
+  ["1000K" , "#ff3800"],
+  ["1300K" , "#ff5d00"],
+  ["1500K" , "#ff6d00"],
+  ["1800K" , "#ff7e00"],
+  ["2000K" , "#ff8912"],
+  ["2300K" , "#ff9836"],
+  ["2500K" , "#ffa148"],
+  ["2800K" , "#ffad5e"],
+  ["3000K" , "#ffb46b"],
+  ["3500K" , "#ffc987"],
+  ["4000K" , "#ffd1a3"],
+  ["4500K" , "#ffdbba"],
+  ["5000K" , "#ffe4ce"],
+  ["5500K" , "#ffece0"],
+  ["6000K" , "#fff3ef"],
+  ["6500K" , "#fff9fd"],
+  ["7000K" , "#f5f3ff"],
+  ["8000K" , "#e3e9ff"],
+  ["9000K" , "#d6e1ff"],
+  ["10000K" , "#ccdbff"]
+]);
+
+
+window.onload = function () {
+
+  $("#tabs").tabs( "option", "active", 0 ); 
+  $("#tabs2").tabs( "option", "active", 0 ); 
+
+  var count = 0;
+
+  $("#slider-main").slider("option", { min: 0, max: 100 });
+
+  $("#onoff-main").flipswitch();
+
+  $("#temp-main").selectmenu();
+
+  var clientID = "clientId" + new Date().getTime();
+
+  var client = new Paho.Client("10.0.128.128", 9001, clientID);
+
+  client.onMessageArrived = onMessage;
+  client.onConnectionLost = onConnectionLost;
+
+  client.connect({ onSuccess: onConnect });
+
+  function onConnectionLost(responseObject) {
+    if (responseObject.errorCode !== 0) 
+    {
+      console.log("onConnectionLost:" + responseObject.errorMessage);
+    }
+    //reconnect
+    client.connect({ onSuccess: onConnect });
+  }
+
+  function onConnect() {
+    console.log("connection successful " + clientID);
+
+    client.subscribe("/ufficio28/acquario/mainlight/status/+");
+
+
+  }
+
+  function onMessage(message) {
+
+    if ( message.topic.startsWith("/ufficio28/acquario/mainlight/status") ) 
+    {
+      var obj = JSON.parse(message.payloadString);
+
+      if (message.topic.endsWith("/state")) {
+        $("#onoff-main").flipswitch("disable");
+        $("#onoff-main").prop("checked", obj.value == "on");
+        $("#onoff-main").flipswitch("refresh");
+        $("#onoff-main").flipswitch("enable");
+      }
+
+
+      if (message.topic.endsWith("/brightness")) {
+        $("#slider-main").slider("disable");
+        $("#slider-main").val(obj.value);
+        $("#slider-main").slider("refresh");
+        $("#slider-main").slider("enable");
+      }
+      
+      
+      if (message.topic.endsWith("/temperature")) {
+        var myselect = $("#temp-main")
+        myselect.selectmenu("disable");
+        myselect[0].selectedIndex = obj.value;
+        myselect.selectmenu("refresh");
+        myselect.selectmenu("enable");
+      }
+
+      if (message.topic.endsWith("/color")) {
+        var view = document.getElementById("view-color-main");
+        view.style.backgroundColor = "#" + obj.value;
+        view.style.color = shouldBeWhite(view) ? "#ffffff" : "#000000";
+        view.innerHTML = "#" + obj.value;
+      }
+    }
+
+  }
+
+  $("#temp-main").on("change", function (event) {
+
+    var temp = $("#temp-main").prop("selectedIndex");
+    client.send(
+      "/ufficio28/acquario/mainlight/command",
+      JSON.stringify({ temperature: temp })
+    );
+  });
+
+
+
+  $("#abinsula-main").on("click", function (event) {
+    client.send(
+      "/ufficio28/acquario/mainlight/command",
+      JSON.stringify({ abinsula: true })
+    );
+  });
+
+
+  $("#random-main").on("click", function (event) {
+    client.send(
+      "/ufficio28/acquario/mainlight/command",
+      JSON.stringify({ random: true })
+    );
+  });
+
+  $("#rainbow-main").on("click", function (event) {
+    client.send(
+      "/ufficio28/acquario/mainlight/command",
+      JSON.stringify({ rainbow: true })
+    );
+  });
+
+
+
+
+  $("#onoff-main").on("change", function (event) {
+    _on = $("#onoff-main").is(":checked") ? "on" : "off";
+
+    client.send(
+      "/ufficio28/acquario/mainlight/command",
+      JSON.stringify({ state: _on })
+    );
+  });
+
+  $("#slider-main").on("slidestop", function (event, ui) {
+    _brightness = $("#slider-main").val();
+
+    client.send(
+      "/ufficio28/acquario/mainlight/command",
+      JSON.stringify({ brightness: _brightness })
+    );
+  });
+
+
+
+
+
+  function shouldBeWhite(ele) {
+    var style = window.getComputedStyle(ele, null);
+    var color = style.backgroundColor;
+    var rgb = color.match(/[0-9]+/g).map(function (n) {
+      return Number(n);
+    });
+    return rgb[0] + rgb[1] + rgb[2] < (255 * 3) / 2 ? true : false;
+  }
+
+  var div = document.getElementById("main");
+  Beehive.Picker(div);
+  div.addEventListener("click", function (e) {
+    var color = Beehive.getColorCode(e.target);
+    if (!color) {
+      return;
+    }
+    var view = document.getElementById("view-color-main");
+    view.style.backgroundColor = color;
+    view.style.color = shouldBeWhite(e.target) ? "#ffffff" : "#000000";
+    view.innerHTML = color;
+
+    _color = color.slice(1);
+
+    client.send(
+      "/ufficio28/acquario/mainlight/command",
+      JSON.stringify({ color: _color })
+    );
+  });
+
+ 
+
+
+
+};
+</script>  
+
+</body>
+</html>
