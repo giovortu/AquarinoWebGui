@@ -405,3 +405,11 @@ margin:0px auto !important;
 .key .material-icons {
   color: #000; /* Set the icon color to black */
 }
+
+#temp-main-label, #temp-ambi-label {
+  font-size: 20px;
+  font-weight: bold;
+  border:1px solid black;
+  border-radius: 5px;
+  padding:15px;
+}

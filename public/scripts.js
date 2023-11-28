@@ -52,7 +52,7 @@ var _temperature = new Map( [
   ["10000K" , "#ccdbff"]
 ]);
 
-
+var temperatureArray = Array.from(_temperature);
 
 window.onload = function () {
 
@@ -78,18 +78,18 @@ window.onload = function () {
     console.log("temperature-slider-ambi")
     
     var temp = $("#temperature-slider-ambi").val();
-    client.send(
+    sendMQTT(
       "/ufficio28/acquario/ambilight/command",
       JSON.stringify({ temperature: temp })
     );
   });
   */
 
-
+  /*
 
   const canvas = document.getElementById('canvas');
   const ctx = canvas.getContext('2d');
-  /*const websocket = new WebSocket('ws://localhost:8765');
+const websocket = new WebSocket('ws://localhost:8765');
 
   websocket.onmessage = (event) => {
     const img = new Image();
@@ -105,16 +105,14 @@ window.onload = function () {
   $("#tabs").tabs( "option", "active", 0 ); 
   $("#tabs2").tabs( "option", "active", 0 ); 
 
-  var count = 0;
-  _temperature.forEach (function(value, key) {
-    var optTempl = '<option style="background-color:' + value + ';" value="' +count+ '">'+key+'</span></option>';  
-    $("#temp-main").append( optTempl );
-    $("#temp-ambi").append( optTempl );
-    count++;
-  })
-
   $("#slider-main").slider("option", { min: 0, max: 100 });
   $("#slider-ambi").slider("option", { min: 0, max: 100 });
+
+  $("#temp-main").slider("option", { min: 0, max: 21 });
+  $("#temp-main").hide();
+  $("#temp-ambi").slider("option", { min: 0, max: 21 });
+  $("#temp-ambi").hide();
+  
   $("#onoff-main").flipswitch();
   $("#onoff-ambi").flipswitch();
 
@@ -126,15 +124,17 @@ window.onload = function () {
   } );
 
 
+function sendMQTT( topic, payload )
+{
+  payload.clientID = clientID;
+  client.publish( topic, JSON.stringify(payload) );
+}
 
-  $("#temp-main").selectmenu({position: { my : "left+100 center", at: "right center" } });
-  $("#temp-ambi").selectmenu({position: { my : "left+10 center", at: "right center" } });
 
   var clientID = "clientId" + new Date().getTime();
 
   var client = new Paho.Client("10.0.128.128", 9001, clientID);
 
-  var fromStatus = false;
 
   client.onMessageArrived = onMessage;
   client.onConnectionLost = onConnectionLost;
@@ -156,13 +156,32 @@ window.onload = function () {
     client.subscribe("/ufficio28/acquario/mainlight/status/+");
     client.subscribe("/ufficio28/acquario/ambilight/status/+");
 
-    client.subscribe("/ufficio28/acquario/sensors/+");
+    client.subscribe("/ufficio28/acquario/sensors/#");
+    client.subscribe("/ufficio28/acquario/gui/command");
 
   }
 
   function onMessage(message) {
 
-    if ( message.topic.startsWith("/ufficio28/acquario/sensors") ) 
+    var obj = JSON.parse(message.payloadString);
+
+    if ( obj.clientID == clientID )
+    {
+      console.log("SELF!", obj.clientID, clientID );
+      return;
+    }
+
+    if ( message.topic.startsWith("/ufficio28/acquario/gui/command") ) 
+    {
+      console.log("onMessage:" + message.payloadString )
+      var obj = JSON.parse(message.payloadString);
+      if ( obj.what == "refresh" )
+      {
+        window.location.reload();
+      }
+    }
+    else
+    if ( message.topic.startsWith("/ufficio28/acquario/sensors/2548731") ) 
     {
       var obj = JSON.parse(message.payloadString);
 
@@ -174,29 +193,36 @@ window.onload = function () {
 
       if (message.topic.endsWith("/temperature")) {
         $("#tempGauge").val( obj.value );
-        $("#tempGauge-label").html( obj.value + "&deg;C");
+        $("#tempGauge-label").html( obj.value.toFixed(2) + "&deg;C");
         console.log( "Temperature " + obj.value);
       }
 
       if (message.topic.endsWith("/humidity")) {
         $("#humidityGauge").val( obj.value );
-        $("#humidityGauge-label").html(obj.value + "%");
+        $("#humidityGauge-label").html(obj.value.toFixed(2) + "%");
         console.log( "Humidity " + obj.value);
+      }
+
+      if (message.topic.endsWith("/battery_level")) {
+        $("#batteryGauge").val( obj.value );
+        $("#batteryGauge-label").html(obj.value.toFixed(2) + "%");
+        console.log( "Battery " + obj.value);
       }
 
       if (message.topic.endsWith("/watertemperature")) {
         $("#waterGauge").val( obj.value );
-        $("#waterGauge-label").html(obj.value + "&deg;C");
+        $("#waterGauge-label").html(obj.value.toFixed(2) + "&deg;C");
       }
+
 
     }
     else
     if ( message.topic.startsWith("/ufficio28/acquario/mainlight/status") ) 
     {
-      var obj = JSON.parse(message.payloadString);
-      fromStatus = true;
 
-      if (message.topic.endsWith("/state")) {
+      var obj = JSON.parse(message.payloadString);
+
+      if (message.topic.endsWith("/status")) {
         $("#onoff-main").flipswitch("disable");
         $("#onoff-main").prop("checked", obj.value == "on");
         $("#onoff-main").flipswitch("refresh");
@@ -211,13 +237,13 @@ window.onload = function () {
         $("#slider-main").slider("enable");
       }
       
-      
+    
       if (message.topic.endsWith("/temperature")) {
-        var myselect = $("#temp-main")
-        myselect.selectmenu("disable");
-        myselect[0].selectedIndex = obj.value;
-        myselect.selectmenu("refresh");
-        myselect.selectmenu("enable");
+        $("#temp-main").slider("disable");
+        $("#temp-main").val(obj.value);
+        $("#temp-main").slider("refresh");
+        $("#temp-main-label").css("background-color", temperatureArray[ obj.value ][1]  );
+        $("#temp-main").slider("enable");     
       }
 
       if (message.topic.endsWith("/color")) {
@@ -227,16 +253,15 @@ window.onload = function () {
         view.innerHTML = "#" + obj.value;
       }
 
-      fromStatus = false;
+
     }
     else
     if ( message.topic.startsWith("/ufficio28/acquario/ambilight/status") )
     {
-      fromStatus = true;
 
       var obj = JSON.parse(message.payloadString);
 
-      if (message.topic.endsWith("/state")) {
+      if (message.topic.endsWith("/status")) {
         $("#onoff-ambi").flipswitch("disable");
         $("#onoff-ambi").prop("checked", obj.value == "on");
         $("#onoff-ambi").flipswitch("refresh");
@@ -245,14 +270,11 @@ window.onload = function () {
 
             
       if (message.topic.endsWith("/temperature")) {
-
-          
-        var myselect = $("#temp-ambi")
-        myselect.selectmenu("disable");
-        myselect[0].selectedIndex = obj.value;
-        myselect.selectmenu("refresh");
-        myselect.selectmenu("enable");
-        
+        $("#temp-ambi").slider("disable");
+        $("#temp-ambi").val(obj.value);
+        $("#temp-ambi").slider("refresh");
+        $("#temp-ambi").slider("enable");   
+        $("#temp-ambi-label").css("background-color", temperatureArray[ obj.value ][1]  );    
       }
 
 
@@ -273,123 +295,86 @@ window.onload = function () {
         view.innerHTML = "#" + obj.value;
       }
 
-      fromStatus = false;
     }
   }
 
   $("#temp-main").on("change", function (event) {
 
-    if ( fromStatus )
-    return;
-    var temp = $("#temp-main").prop("selectedIndex");
-    client.send(
-      "/ufficio28/acquario/mainlight/command",
-      JSON.stringify({ temperature: temp })
-    );
+    var temp = $("#temp-main").prop("value");
+
+    $("#temp-main-label").html( temperatureArray[ temp][0]  );
+    $("#temp-main-label").css("background-color", temperatureArray[ temp][1]  );
+
+    sendMQTT( "/ufficio28/acquario/mainlight/command",{ temperature: temp })
   });
 
 
-  
 
 
+  $("#temp-ambi").on("slidestop", function (event, ui) {
 
-  $("#temp-ambi").on("change", function (event) {
-    if ( fromStatus )
-      return;
-    var temp = $("#temp-ambi").prop("selectedIndex");
-    client.send(
-      "/ufficio28/acquario/ambilight/command",
-      JSON.stringify({ temperature: temp })
-    );
-  });
-
-
-  $("#abinsula-main").on("click", function (event) {
+    var temp = $("#temp-ambi").prop("value");
     
-    client.send(
-      "/ufficio28/acquario/mainlight/command",
-      JSON.stringify({ abinsula: true })
-    );
+    $("#temp-ambi-label").html( _tempetemperatureArrayrature[ temp ][0] );
+    $("#temp-ambi-label").css("background-color", temperatureArray[ temp][1]  );
+
+    sendMQTT( "/ufficio28/acquario/ambilight/command",{ temperature: temp } );
+  });
+
+
+  $("#abinsula-main").on("slidestop", function (event, ui) {
+    
+    sendMQTT( "/ufficio28/acquario/mainlight/command", { abinsula: true });
   });
 
   $("#abinsula-ambi").on("click", function (event) {
-    client.send(
-      "/ufficio28/acquario/ambilight/command",
-      JSON.stringify({ abinsula: true })
-    );
+
+    sendMQTT( "/ufficio28/acquario/ambilight/command", { abinsula: true } );
   });
 
 
   $("#random-main").on("click", function (event) {
-    client.send(
-      "/ufficio28/acquario/mainlight/command",
-      JSON.stringify({ random: true })
-    );
+    sendMQTT( "/ufficio28/acquario/mainlight/command", { random: true });
   });
 
   $("#rainbow-main").on("click", function (event) {
-    client.send(
-      "/ufficio28/acquario/mainlight/command",
-      JSON.stringify({ rainbow: true })
-    );
+    sendMQTT( "/ufficio28/acquario/mainlight/command",{ rainbow: true });
   });
 
   $("#random-ambi").on("click", function (event) {
-    client.send(
-      "/ufficio28/acquario/ambilight/command",
-      JSON.stringify({ random: true })
-    );
+    sendMQTT( "/ufficio28/acquario/ambilight/command",{ random: true } );
   });
 
   $("#rainbow-ambi").on("click", function (event) {
-    client.send(
-      "/ufficio28/acquario/ambilight/command",
-      JSON.stringify({ rainbow: true })
-    );
+    sendMQTT( "/ufficio28/acquario/ambilight/command",{ rainbow: true });
   });
 
   $("#onoff-main").on("change", function (event) {
-    if ( fromStatus )
-    return;
+
     _on = $("#onoff-main").is(":checked") ? "on" : "off";
 
-    client.send(
-      "/ufficio28/acquario/mainlight/command",
-      JSON.stringify({ state: _on })
-    );
+    sendMQTT( "/ufficio28/acquario/mainlight/command", { status: _on } );
   });
 
   $("#slider-main").on("slidestop", function (event, ui) {
-    if ( fromStatus )
-    return;
+
     _brightness = $("#slider-main").val();
 
-    client.send(
-      "/ufficio28/acquario/mainlight/command",
-      JSON.stringify({ brightness: _brightness })
-    );
+    sendMQTT( "/ufficio28/acquario/mainlight/command", { brightness: _brightness });
   });
 
   $("#onoff-ambi").on("change", function (event) {
-    if ( fromStatus )
-    return;
+
     _on2 = $("#onoff-ambi").is(":checked") ? "on" : "off";
 
-    client.send(
-      "/ufficio28/acquario/ambilight/command",
-      JSON.stringify({ state: _on2 })
-    );
+    sendMQTT( "/ufficio28/acquario/ambilight/command", { status: _on2 });
   });
 
   $("#slider-ambi").on("slidestop", function (event, ui) {
-    if ( fromStatus )
-    return;
-    _brightness2 = $("#slider-ambi").val();
 
-    client.send(
-      "/ufficio28/acquario/ambilight/command",
-      JSON.stringify({ brightness: _brightness2 })
-    );
+    _brightness2 = $("#slider-ambi").val();
+ 
+    sendMQTT( "/ufficio28/acquario/ambilight/command", { brightness: _brightness2 });
   });
 
   function shouldBeWhite(ele) {
@@ -417,11 +402,8 @@ window.onload = function () {
     view.innerHTML = color;
 
     _color = color.slice(1);
-
-    client.send(
-      "/ufficio28/acquario/mainlight/command",
-      JSON.stringify({ color: _color })
-    );
+ 
+    sendMQTT( "/ufficio28/acquario/mainlight/command", { color: _color } );
   });
 
   var div2 = document.getElementById("ambient");
@@ -438,10 +420,7 @@ window.onload = function () {
 
     _color2 = color.slice(1);
 
-    client.send(
-      "/ufficio28/acquario/ambilight/command",
-      JSON.stringify({ color: _color2 })
-    );
+    sendMQTT( "/ufficio28/acquario/ambilight/command",{ color: _color2 } );
   });
 
 
@@ -455,20 +434,25 @@ window.onload = function () {
     ticksMinor: { interval: 1, size: '5%' },
     ticksMajor: { interval: 15, size: '9%' },
     pointer: { size: '5%', style: { fill: '#00ff00', stroke: '#000' }, size: '7%', visible: true, offset: -12 },
-    value: 30,
+    value: 0,
     colorScheme: 'scheme03',
     animationDuration: 1200
 });
 
 $('#lumGauge').jqxLinearGauge({
-  max:100,
+  max:200,
   min:0,
-  ranges: [{ startValue: 0, endValue: 50, style: { fill: '#C9C9C9', stroke: '#C9C9C9' }, endWidth: 5, startWidth: 1 },
-              { startValue: 50, endValue: 100, style: { fill: '#FCF06A', stroke: '#FCF06A' }, endWidth: 5, startWidth: 1 }],
-  ticksMinor: { interval: 1, size: '5%' },
-  ticksMajor: { interval: 15, size: '9%' },
+  ranges: [ { startValue:   0, endValue:  50, style: { fill: '#99C9C9', stroke: '#C9C9C9' }, endWidth: 5, startWidth: 1 },
+            { startValue:  50, endValue: 100, style: { fill: '#B9C9C9', stroke: '#C9C9C9' }, endWidth: 5, startWidth: 1 },
+            { startValue: 100, endValue: 150, style: { fill: '#D9C9C9', stroke: '#C9C9C9' }, endWidth: 5, startWidth: 1 },
+            { startValue: 150, endValue: 200, style: { fill: '#E0F06A', stroke: '#C9C9C9' }, endWidth: 5, startWidth: 1 }
+
+          ],
+  ticksMinor: { interval: 50, size: '5%' },
+  ticksMajor: { interval: 100, size: '9%' },
   pointer: { size: '5%', style: { fill: '#00ff00', stroke: '#000' }, size: '7%', visible: true, offset: -12 },
-  value: 30,
+  value: 0,
+
   colorScheme: 'scheme03',
   animationDuration: 1200
 });
@@ -481,10 +465,43 @@ $('#humidityGauge').jqxLinearGauge({
   ticksMinor: { interval: 1, size: '5%' },
   ticksMajor: { interval: 15, size: '9%' },
   pointer: { size: '5%', style: { fill: '#00ff00', stroke: '#000' }, size: '7%', visible: true, offset: -12 },
-  value: 30,
+  value: 0,
   colorScheme: 'scheme03',
   animationDuration: 1200
 });
+
+/*
+$('#soilGauge').jqxLinearGauge({
+  max:100,
+  min:0,
+  ranges: [{ startValue: 0, endValue: 100, style: { fill: '#C9C9C9', stroke: '#C9C9C9' }, endWidth: 5, startWidth: 1 },
+              { startValue: 50, endValue: 100, style: { fill: '#FCF06A', stroke: '#FCF06A' }, endWidth: 5, startWidth: 1 }],
+  ticksMinor: { interval: 1, size: '5%' },
+  ticksMajor: { interval: 15, size: '9%' },
+  pointer: { size: '5%', style: { fill: '#00ff00', stroke: '#000' }, size: '7%', visible: true, offset: -12 },
+  value: 0,
+  colorScheme: 'scheme03',
+  animationDuration: 1200
+});
+*/
+
+$('#batteryGauge').jqxLinearGauge({
+  max:100,
+  min:0,
+  ranges: [{ startValue: 0, endValue: 100, style: { fill: '#C9C9C9', stroke: '#C9C9C9' }, endWidth: 5, startWidth: 1 },
+              { startValue: 50, endValue: 100, style: { fill: '#FCF06A', stroke: '#FCF06A' }, endWidth: 5, startWidth: 1 }],
+  ticksMinor: { interval: 1, size: '5%' },
+  ticksMajor: { interval: 15, size: '9%' },
+  pointer: { size: '5%', style: { fill: '#00ff00', stroke: '#000' }, size: '7%', visible: true, offset: -12 },
+  value: 0,
+  colorScheme: 'scheme03',
+  animationDuration: 1200
+});
+
+
+
+//$("#is_battery_charging").jqxCheckBox({ theme: 'shinyblack',width: 25, height: 25, disabled: true});
+
 
 $('#waterGauge').jqxLinearGauge({
   max:60,
@@ -496,7 +513,7 @@ $('#waterGauge').jqxLinearGauge({
   ticksMinor: { interval: 1, size: '5%' },
   ticksMajor: { interval: 15, size: '9%' },
   pointer: { size: '5%', style: { fill: '#00ff00', stroke: '#000' }, size: '7%', visible: true, offset: -12 },
-  value: 30,
+  value: 0,
   colorScheme: 'scheme03',
   animationDuration: 1200
 });

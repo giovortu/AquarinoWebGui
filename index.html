@@ -11,7 +11,7 @@
   <script src="paho-mqtt.js"></script>
   <script src="scripts.js"></script>
   <script src="crypto.js"></script>
-  <script src="overlay.js"></script>
+  <!--script src="overlay.js"></script-->
   <link rel="stylesheet" href="jqwidgets/styles/jqx.base.css" type="text/css" />
   <link rel="stylesheet" href="jqwidgets/styles/jqx.material.css" type="text/css" />
   <script type="text/javascript" src="jqwidgets/jqxcore.js"></script>
@@ -22,7 +22,7 @@
 
 <body class="ui-mobile-viewport ui-overlay-a">
 
-  <div id="overlay">
+  <!--div id="overlay">
     <div id="password-prompt">
       <h2>Enter Password</h2>
       <div id="password-input-container">
@@ -54,7 +54,7 @@
           </div>
       </div>
   </div>
-</div>
+</div-->
 
   <div class="container" data-role="page ui-page">
 
@@ -110,7 +110,10 @@
                 </div>
 
                 <div id="temperatura" class="ui-body-d ui-content">
-                  <select name="select-native-1" id="temp-main"></select>
+                  <div class="wrapper">
+                    <div id="temp-main-label">1000K</div>
+                  </div>
+                  <input type="range" name="temp-main" id="temp-main" style="margin-left: 5px" value="0" min="0" max="19" />
                 </div>
 
               </div>
@@ -162,16 +165,11 @@
                 </div>
  
                 <div id="temperatura-ambi" class="ui-body-d ui-content">
-                  <select name="select-native-1" id="temp-ambi"></select>
-
-
-
+                  <div class="wrapper">
+                    <div id="temp-ambi-label">1000K</div>
+                  </div>
+                  <input type="range" name="temp-ambi" id="temp-ambi" style="margin-left: 5px" value="0" min="0" max="19" />
                 </div>
-
-                <!--div class="slider-container">
-                  <input type="range" id="temperature-slider-ambi" min="1000" max="10000" step="500" value="4000">
-                  <div id="tooltip" class="tooltip">Color: Warm White (4000K)</div>
-                </div-->
 
               </div>
               <input type="range" name="slider-ambi" id="slider-ambi" style="margin-left: 5px" value="0" min="0" max="100" />
@@ -201,6 +199,11 @@
               <div class="title">Umidit&agrave;</div>
             </div>
           </td>
+          <td>
+            <div class="wrapper">
+              <div class="title">Batteria</div>
+            </div>
+          </td>
         </tr>
         <tr>
           <td>
@@ -219,6 +222,11 @@
             </div>
           </td>
 
+          <td>
+            <div class="wrapper">
+            <div id="batteryGauge"></div>
+            </div>
+          </td>
         </tr>
         <tr>
           <td>
@@ -230,8 +238,11 @@
           <td>
             <div class="wrapper label" id="humidityGauge-label">0 %</div>
           </td>
-
+          <td>
+            <div class="wrapper label" id="batteryGauge-label">0 %</div>
+          </td>
         </tr>
+
       </table>
     </div>
     <div id="sensori-acqua" class="ui-body-d ui-content">
