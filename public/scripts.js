@@ -133,7 +133,7 @@ function sendMQTT( topic, payload )
 
   var clientID = "clientId" + new Date().getTime();
 
-  var client = new Paho.Client("10.0.128.128", 9001, clientID);
+  var client = new Paho.Client("10.0.160.252", 9001, clientID);
 
 
   client.onMessageArrived = onMessage;

@@ -5,7 +5,7 @@ var express = require("express"),
   bodyParser = require("body-parser"),
   mqtt = require("mqtt");
 
-const mqtthost = "10.0.128.128";
+const mqtthost = "127.0.0.1";
 const mqttport = "1883";
 const clientId = `mqtt_${Math.random().toString(16).slice(3)}`;
 
