@@ -235,15 +235,19 @@ function sendMQTT( topic, payload )
         $("#slider-main").val(obj.value);
         $("#slider-main").slider("refresh");
         $("#slider-main").slider("enable");
+
       }
       
     
       if (message.topic.endsWith("/temperature")) {
+
         $("#temp-main").slider("disable");
         $("#temp-main").val(obj.value);
         $("#temp-main").slider("refresh");
         $("#temp-main-label").css("background-color", temperatureArray[ obj.value ][1]  );
         $("#temp-main").slider("enable");     
+
+        $("#temp-main-label").html( temperatureArray[ obj.value ][0] )
       }
 
       if (message.topic.endsWith("/color")) {
@@ -275,6 +279,7 @@ function sendMQTT( topic, payload )
         $("#temp-ambi").slider("refresh");
         $("#temp-ambi").slider("enable");   
         $("#temp-ambi-label").css("background-color", temperatureArray[ obj.value ][1]  );    
+        $("#temp-ambi-label").html( temperatureArray[ obj.value ][0] )
       }
 
 
@@ -315,7 +320,7 @@ function sendMQTT( topic, payload )
 
     var temp = $("#temp-ambi").prop("value");
     
-    $("#temp-ambi-label").html( _tempetemperatureArrayrature[ temp ][0] );
+    $("#temp-ambi-label").html( temperatureArray[ temp ][0] );
     $("#temp-ambi-label").css("background-color", temperatureArray[ temp][1]  );
 
     sendMQTT( "/ufficio28/acquario/ambilight/command",{ temperature: temp } );
